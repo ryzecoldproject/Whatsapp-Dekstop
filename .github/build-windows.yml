@@ -1,0 +1,78 @@
+name: Build Windows
+
+on:
+  push:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    name: Build WhatsApp Desk for Windows
+    runs-on: windows-latest
+
+    steps:
+      # Checkout source code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Install Go berdasarkan versi yang ditentukan di go.mod
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      # Download dependencies
+      - name: Download dependencies
+        run: go mod download
+
+      # Build Windows x64
+      - name: Build Windows x64
+        env:
+          GOOS: windows
+          GOARCH: amd64
+          CGO_ENABLED: 1
+        run: |
+          go build -o WhatsApp.exe .
+
+      # Check generated file
+      - name: Verify build
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "WhatsApp.exe")) {
+            Write-Error "WhatsApp.exe was not created."
+            exit 1
+          }
+
+          $file = Get-Item "WhatsApp.exe"
+
+          Write-Host "Build successful!"
+          Write-Host "File: $($file.FullName)"
+          Write-Host "Size: $([math]::Round($file.Length / 1MB, 2)) MB"
+
+      # Create ZIP
+      - name: Create ZIP
+        shell: pwsh
+        run: |
+          Compress-Archive `
+            -Path "WhatsApp.exe" `
+            -DestinationPath "WhatsApp-Windows-x64.zip" `
+            -Force
+
+      # Upload EXE
+      - name: Upload EXE artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: WhatsApp-Windows-x64
+          path: WhatsApp.exe
+          if-no-files-found: error
+
+      # Upload ZIP
+      - name: Upload ZIP artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: WhatsApp-Windows-x64-ZIP
+          path: WhatsApp-Windows-x64.zip
+          if-no-files-found: error
