@@ -26,14 +26,9 @@ jobs:
           $file = "main.go"
           $content = Get-Content $file -Raw
 
-          $replacement1 = @"
-windowWidth  = 1100
-  windowHeight = 750
-  windowTitle  = "WhatsAppDezk by RSMV"
-  appURL       = "https://web.whatsapp.com"
-"@
+          $newVars = "windowWidth  = 1100`r`n  windowHeight = 750`r`n  windowTitle  = `"WhatsAppDezk by RSMV`"`r`n  appURL       = `"https://web.whatsapp.com`""
 
-          $content = $content -replace 'windowWidth\s*=\s*1100\r?\n\s*windowHeight\s*=\s*750', $replacement1
+          $content = $content -replace 'windowWidth\s*=\s*1100\r?\n\s*windowHeight\s*=\s*750', $newVars
           $content = $content -replace 'if !validateBuildEnvironment\(\) \{\r?\n\s*return\r?\n\s*\}\r?\n\s*runApp\(\)', 'runApp()'
 
           Set-Content $file $content -NoNewline -Encoding UTF8
