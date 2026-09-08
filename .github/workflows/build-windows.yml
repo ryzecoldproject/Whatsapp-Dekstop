@@ -24,18 +24,19 @@ jobs:
         shell: pwsh
         run: |
           $file = "main.go"
-
           $content = Get-Content $file -Raw
 
-          $content = $content -replace `
-            'windowWidth  = 1100\r?\n\s*windowHeight = 750', `
-            'windowWidth  = 1100`r`n	windowHeight = 750`r`n	windowTitle  = "WhatsAppDezk by RSMV"`r`n	appURL       = "https://web.whatsapp.com"'
+          $replacement1 = @"
+windowWidth  = 1100
+  windowHeight = 750
+  windowTitle  = "WhatsAppDezk by RSMV"
+  appURL       = "https://web.whatsapp.com"
+"@
 
-          $content = $content -replace `
-            'if !validateBuildEnvironment\(\) \{\r?\n\s*return\r?\n\s*\}\r?\n\s*runApp\(\)', `
-            'runApp()'
+          $content = $content -replace 'windowWidth\s*=\s*1100\r?\n\s*windowHeight\s*=\s*750', $replacement1
+          $content = $content -replace 'if !validateBuildEnvironment\(\) \{\r?\n\s*return\r?\n\s*\}\r?\n\s*runApp\(\)', 'runApp()'
 
-          Set-Content $file $content -Encoding UTF8
+          Set-Content $file $content -NoNewline -Encoding UTF8
 
       - name: Build Windows x64
         env:
